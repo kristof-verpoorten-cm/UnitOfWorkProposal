@@ -16,6 +16,7 @@ namespace UnitOfWorkProposal
 			Bind<IPurchaseRepository>().To<PurchaseRepository>();
 			Bind<IPurchaseItemRepository>().To<PurchaseItemRepository>();
 
+			//in our website this needs to be in request scope instead of singleton
 			Bind<IUnitOfWork>().To<UnitOfWork>().InSingletonScope();
 			Bind<IContextFactory>().To<ContextFactory>();
 			Bind<IWriteEntities>().To<WriteEntities>();
