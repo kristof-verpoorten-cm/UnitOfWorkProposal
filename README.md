@@ -38,3 +38,6 @@ CREATE A PURCHASEITEM FOR AN EXISTING PURCHASE WITHOUT A TRANSACTION
 Create purchaseItem for purchase with id 1a3f55f2-910f-45c9-bf13-cc914e2ef1ac
 IWriteEntities for context with ID d3bc6369-3538-459f-aad1-8635f5f76fa4: Creating a new purchase item
 IWriteEntities for context with ID d3bc6369-3538-459f-aad1-8635f5f76fa4: SaveChanges()```
+
+
+Both in the case with and without transaction the `PurchaseService` is using the same methods from the repositories., but when a transaction is active the `SaveChanges()` will not happen until the transaction is complete!
