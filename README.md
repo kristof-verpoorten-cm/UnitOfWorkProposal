@@ -6,8 +6,30 @@ The repositories do not have to be aware if there is a transaction active or not
 
 Services can use any repository method with or without transaction.
 
-This is the output when you run this program:
+The following code generates the output below:
+```C#
+Console.WriteLine("CREATE A PURCHASE WITHOUT TRANSACTION");
+Console.WriteLine("=====================================");
+purchaseService.Create(new Purchase { Id = Guid.NewGuid() });
 
+Console.WriteLine("\n\n\nCREATE A PURCHASE AND PURCHASEITEMS WITH A TRANSACTION");
+Console.WriteLine("======================================================");
+var purchaseId = Guid.NewGuid();
+purchaseService.CreateWithPurchaseItems(
+  new Purchase { Id = purchaseId },
+  new List<PurchaseItem> {
+    new PurchaseItem(),
+    new PurchaseItem(),
+    new PurchaseItem()
+  }
+);
+
+Console.WriteLine("\n\n\nCREATE A PURCHASEITEM FOR AN EXISTING PURCHASE WITHOUT A TRANSACTION");
+Console.WriteLine("==========================================================================");
+purchaseItemService.Create(purchaseId, new PurchaseItem());
+```
+
+OUTPUT:
 ```
 CREATE A PURCHASE WITHOUT TRANSACTION
 =====================================
