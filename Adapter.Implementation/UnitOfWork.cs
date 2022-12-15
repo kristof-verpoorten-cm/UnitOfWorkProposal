@@ -1,4 +1,5 @@
 ﻿using Adapter.Contract;
+using Geevers.Infrastructure;
 using System.Net;
 
 namespace Adapter.Implementation
@@ -7,77 +8,52 @@ namespace Adapter.Implementation
 	{
 		private readonly IContextFactory contextFactory;
 
-		private IWriteEntities transactionContext = null;
-		private bool transactionInProgress = false;
+		private ITransaction currentTransaction = null;
 
 		public UnitOfWork(IContextFactory contextFactory)
 		{
 			this.contextFactory = contextFactory;
 		}
 
-		public HttpStatusCode BeginTransaction()
+		public ITransaction BeginTransaction()
 		{
-			if (this.transactionInProgress)
+			if (this.TransactionInProgress)
 			{
-				return HttpStatusCode.BadRequest;
+				return this.currentTransaction;
 			}
 
-			this.transactionContext = this.contextFactory.CreateWriter();
-			this.transactionInProgress = true;
+			this.currentTransaction = new Transaction(this.contextFactory.CreateWriter());
 
-			return HttpStatusCode.NoContent;
+			return this.currentTransaction;
 		}
+
+		public bool TransactionInProgress => this.currentTransaction?.IsActive ?? false;
 
 		public IReadEntities CreateReader()
 		{
-			if (false == this.transactionInProgress)
+			if (false == this.TransactionInProgress)
 			{
 				return this.contextFactory.CreateReader();
 			}
 
-			return this.transactionContext;
+			return this.currentTransaction.Reader;
 		}
 
 		public IWriteEntities CreateWriter()
 		{
-			if (false == this.transactionInProgress)
+			if (false == this.TransactionInProgress)
 			{
 				return this.contextFactory.CreateWriter();
 			}
-			
-			return this.transactionContext;
+
+			return this.currentTransaction.Writer;
 		}
 
-		public HttpStatusCode CommitTransaction()
-		{
-			if (false == this.transactionInProgress)
-			{
-				return HttpStatusCode.BadRequest;
-			}
-
-			this.transactionContext.SaveChanges();
-			this.transactionInProgress = false;
-
-			return HttpStatusCode.NoContent;
-		}
-
-		public HttpStatusCode RollbackTransaction()
-		{
-			if (false == this.transactionInProgress)
-			{
-				return HttpStatusCode.BadRequest;
-			}
-
-			this.transactionContext = null;
-			this.transactionInProgress = false;
-
-			return HttpStatusCode.NoContent;
-		}
-
+		
 		public void SaveChanges(IWriteEntities writer)
 		{
 			//only save changes when no transaction in progress, otherwise they need to be saved by calling CommitTransaction
-			if (false == this.transactionInProgress)
+			if (false == this.TransactionInProgress)
 			{
 				writer.SaveChanges();
 			}

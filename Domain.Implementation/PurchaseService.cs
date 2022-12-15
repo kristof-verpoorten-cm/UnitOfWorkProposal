@@ -30,22 +30,20 @@ namespace Domain.Implementation
 
 		public Response<Purchase> CreateWithPurchaseItems(Purchase purchase, ICollection<PurchaseItem> purchaseItems)
 		{
-			if (this.unitOfWork.BeginTransaction().IsNot(HttpStatusCode.NoContent, out var beginTransactionFail))
+			using (var transaction = this.unitOfWork.BeginTransaction())
 			{
-				return beginTransactionFail;
+				this.purchaseRepository.Create(purchase);   //the service uses the same repository functions wheter a transaction is active or not
+				this.purchaseRepository.Read(purchase.Id);
+
+				foreach (var purchaseItem in purchaseItems)
+				{
+					this.purchaseItemRepository.CreateForPurchase(purchase.Id, purchaseItem);
+				}
+
+				transaction.Commit();
+
+				return purchase;
 			}
-
-			this.purchaseRepository.Create(purchase);	//the service uses the same repository functions wheter a transaction is active or not
-			this.purchaseRepository.Read(purchase.Id);
-
-			foreach(var purchaseItem in purchaseItems)
-			{
-				this.purchaseItemRepository.CreateForPurchase(purchase.Id, purchaseItem);
-			}
-
-			this.unitOfWork.CommitTransaction();
-
-			return purchase;
 		}
 	}
 }

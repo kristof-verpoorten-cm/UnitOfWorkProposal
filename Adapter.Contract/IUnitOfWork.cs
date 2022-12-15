@@ -1,14 +1,15 @@
-﻿using System.Net;
-
-namespace Adapter.Contract
+﻿namespace Adapter.Contract
 {
 	public interface IUnitOfWork
 	{
-		HttpStatusCode BeginTransaction();
+		ITransaction BeginTransaction();
+
+		bool TransactionInProgress { get; }
+
 		IReadEntities CreateReader();
+
 		IWriteEntities CreateWriter();
-		HttpStatusCode RollbackTransaction();
-		HttpStatusCode CommitTransaction();
+
 		void SaveChanges(IWriteEntities writer);
 	}
 }
